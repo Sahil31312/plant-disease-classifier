@@ -1,0 +1,13 @@
+# Essential Requirements Only
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Bcrypt==1.0.1
+Werkzeug==3.0.1
+Jinja2==3.1.2
+SQLAlchemy==2.0.23
+tensorflow==2.15.0
+keras==2.15.0
+numpy==1.24.3
+Pillow==10.1.0
+schedule==1.2.0
