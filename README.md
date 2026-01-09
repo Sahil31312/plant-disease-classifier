@@ -188,5 +188,7 @@ git push heroku main
 heroku open
 ```
 
-
+## Model Weights
+Download the trained CNN model weights from [Hugging Face](
+[huggingface.co](https://huggingface.co/ibrahimkhail/cnn-deployment/blob/main/cnn.h5)).
 
