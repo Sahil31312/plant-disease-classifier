@@ -33,7 +33,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-# Create upload folder if not exists
+# Create upload folder to save uploaded Images
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
@@ -58,7 +58,7 @@ class ContactMessage(db.Model):
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     language = db.Column(db.String(10), default='en')
-    status = db.Column(db.String(20), default='unread')  # unread, read, replied
+    status = db.Column(db.String(20), default='unread')  # unread, read, replied foe the messages statues 
 
 
 class PredictionHistory(db.Model):
@@ -102,7 +102,7 @@ class SystemLog(db.Model):
 with app.app_context():
     db.create_all()
 
-    # Create default admin user if not exists
+    # Create default admin user 
     if not User.query.filter_by(username='admin').first():
         hashed_password = bcrypt.generate_password_hash('admin123').decode('utf-8')
         admin = User(
@@ -164,7 +164,7 @@ def create_log(action, details=None):
     db.session.commit()
 
 
-# Load your trained model
+# Loading trained model
 try:
     model = load_model('cnn.h5')
     print("✅ Model loaded successfully!")
@@ -177,7 +177,7 @@ try:
         print(f"📏 Expected image dimensions: {input_shape[0]}x{input_shape[1]}")
         print(f"📏 Expected channels: {input_shape[2]}")
 
-        # Store target size for preprocessing
+        # Store target size for preprocessing as input fo the modeel 
         TARGET_SIZE = (input_shape[0], input_shape[1])
         print(f"🎯 Using target size: {TARGET_SIZE}")
     else:
@@ -593,7 +593,7 @@ def init_disease_info():
     with app.app_context():
         # Check if disease info already exists
         if DiseaseInfo.query.count() == 0:
-            # English disease info
+            # English disease informations
             for i in range(len(class_names['en'])):
                 disease = DiseaseInfo(
                     disease_id=i,
@@ -608,7 +608,7 @@ def init_disease_info():
                 )
                 db.session.add(disease)
 
-            # Pashto disease info
+            # Pashto disease information
             for i in range(len(class_names['ps'])):
                 disease = DiseaseInfo(
                     disease_id=i,
@@ -655,8 +655,7 @@ def preprocess_image(image_input):
             # File path
             img = Image.open(image_input)
         elif hasattr(image_input, 'read'):
-            # File object (from Flask request.files)
-            # Reset file pointer to beginning
+          
             if hasattr(image_input, 'seek'):
                 image_input.seek(0)
             img = Image.open(io.BytesIO(image_input.read()))
@@ -667,24 +666,24 @@ def preprocess_image(image_input):
             raise ValueError(f"Unsupported input type: {type(image_input)}")
 
         # ============================================
-        # 2. CONVERT TO RGB (CRITICAL!)
+        #   CONVERT TO RGB  
         # ============================================
         if img.mode != 'RGB':
             img = img.convert('RGB')
 
         # ============================================
-        # 3. RESIZE TO MODEL'S TRAINING SIZE
+        # RESIZE TO MODEL'S TRAINING SIZE
         # ============================================
         # This is the FIX: Use TARGET_SIZE from model input shape
         img = img.resize(TARGET_SIZE, Image.Resampling.LANCZOS)
 
         # ============================================
-        # 4. NORMALIZE AND PREPARE FOR MODEL
+        #  NORMALIZE AND PREPARE FOR MODEL
         # ============================================
         # Convert to numpy array and normalize to 0-1 range
         img_array = np.array(img, dtype=np.float32) / 255.0
 
-        # Add batch dimension (required by Keras)
+        # Add batch dimension  required by Keras libariy
         img_array = np.expand_dims(img_array, axis=0)
 
         print(f"✅ Image preprocessed successfully")
@@ -762,14 +761,14 @@ def auto_delete_old_logs():
             create_log('Auto-deleted old logs', f'Deleted {old_logs} logs older than 30 days')
 
 
-# Start background task for auto deletion
+# Start background task for auto deletion mean log files
 def start_background_tasks():
     def run_scheduler():
         while True:
             schedule.run_pending()
             time.sleep(3600)  # Check every hour
 
-    # Schedule auto deletion every day at midnight
+    # Schedule auto deletion every day at midnight for logs file without manually delations 
     schedule.every().day.at("00:00").do(auto_delete_old_logs)
 
     # Start in background thread
@@ -1436,7 +1435,7 @@ def toggle_user_active(user_id):
     })
 
 # =====================================
-# Add these routes to your app.py
+ 
 
 @app.route('/api/message/<int:message_id>/reply', methods=['POST'])
 @login_required
@@ -1454,8 +1453,7 @@ def reply_to_message(message_id):
     # Get original message
     original_message = ContactMessage.query.get_or_404(message_id)
 
-    # In a real app, you would send email here
-    # For now, just mark as replied
+   
     original_message.status = 'replied'
     db.session.commit()
 
@@ -1717,8 +1715,7 @@ def get_disease_info(class_index, lang='en'):
 # ======================
 
 
-
-# Context processor to make variables available to all templates
+ 
 # Context processor to make variables available to all templates
 @app.context_processor
 def inject_globals():
@@ -1740,7 +1737,7 @@ def inject_globals():
 
 # ====================================
 
-# Add this route - View specific disease details
+ 
 @app.route('/admin/disease/view/<int:disease_id>/<language>')
 @login_required
 def view_disease(disease_id, language):
@@ -1765,8 +1762,7 @@ def view_disease(disease_id, language):
                            disease_name=class_names[language][disease_id] if disease_id < len(
                                class_names[language]) else f'Disease {disease_id}')
 
-
-# Add this route - Add new disease info
+ 
 @app.route('/admin/disease/add', methods=['GET', 'POST'])
 @login_required
 def add_disease():
@@ -1823,7 +1819,7 @@ def add_disease():
             flash('Error adding disease information', 'error')
             return redirect(url_for('add_disease'))
 
-    # GET request - show form
+    # GET request 
     return render_template('add_disease.html',
                            lang=lang,
                            direction=direction,
