@@ -52,7 +52,7 @@ A professional web application for detecting plant diseases using Convolutional 
 - Complete bilingual disease information
 
 ### 👥 User Management
-- User registration and login system
+- User registration and login system 
 - Role-based access control (Admin/User)
 - User prediction history tracking
 - Profile management
