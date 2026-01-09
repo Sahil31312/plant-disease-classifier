@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6"><i class="fas fa-chart-bar text-primary me-2"></i>{{ t.analysis }}</h1>
+            <p class="lead">{{ t.analysis_desc }}</p>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>{{ t.performance_metrics }}</h3>
+        </div>
+
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="display-6 fw-bold text-primary">{{ "%.1f"|format(analysis_data.accuracy * 100) }}%</div>
+                <small class="text-muted">{{ t.accuracy }}</small>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="display-6 fw-bold text-success">{{ "%.1f"|format(analysis_data.precision * 100) }}%</div>
+                <small class="text-muted">{{ t.precision }}</small>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="display-6 fw-bold text-info">{{ "%.1f"|format(analysis_data.recall * 100) }}%</div>
+                <small class="text-muted">{{ t.recall }}</small>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="display-6 fw-bold text-warning">{{ "%.1f"|format(analysis_data.f1_score * 100) }}%</div>
+                <small class="text-muted">{{ t.f1_score }}</small>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="display-6 fw-bold text-secondary">{{ analysis_data.total_predictions }}</div>
+                <small class="text-muted">{{ t.total_predictions }}</small>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="display-6 fw-bold text-danger">{{ "%.1f"|format(analysis_data.success_rate * 100) }}%</div>
+                <small class="text-muted">{{ t.success_rate }}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>{{ t.class_distribution }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="classDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>{{ t.performance_trend }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>{{ t.recent_activity }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{{ t.date }}</th>
+                                    <th>{{ t.time }}</th>
+                                    <th>{{ t.image }}</th>
+                                    <th>{{ t.prediction }}</th>
+                                    <th>{{ t.confidence }}</th>
+                                    <th>{{ t.status }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024-01-15</td>
+                                    <td>14:30:22</td>
+                                    <td>cat_image.jpg</td>
+                                    <td>{{ class_names[lang][0] }}</td>
+                                    <td><span class="badge bg-success">95.2%</span></td>
+                                    <td><span class="badge bg-success">{{ t.successful }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2024-01-15</td>
+                                    <td>13:45:10</td>
+                                    <td>dog_image.jpg</td>
+                                    <td>{{ class_names[lang][1] }}</td>
+                                    <td><span class="badge bg-warning">78.5%</span></td>
+                                    <td><span class="badge bg-success">{{ t.successful }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2024-01-15</td>
+                                    <td>12:20:05</td>
+                                    <td>bird_image.jpg</td>
+                                    <td>{{ class_names[lang][2] }}</td>
+                                    <td><span class="badge bg-success">88.9%</span></td>
+                                    <td><span class="badge bg-success">{{ t.successful }}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Class Distribution Chart
+        const classCtx = document.getElementById('classDistributionChart').getContext('2d');
+        const classChart = new Chart(classCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ class_names[lang]|tojson }},
+                datasets: [{
+                    data: [25, 20, 15, 30, 10],
+                    backgroundColor: [
+                        '#3498db',
+                        '#2ecc71',
+                        '#e74c3c',
+                        '#f39c12',
+                        '#9b59b6'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Performance Trend Chart
+        const perfCtx = document.getElementById('performanceChart').getContext('2d');
+        const perfChart = new Chart(perfCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: '{{ t.accuracy }}',
+                    data: [85, 88, 90, 92, 93, 95],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.3
+                }, {
+                    label: '{{ t.precision }}',
+                    data: [82, 85, 87, 89, 91, 94],
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 80,
+                        max: 100
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

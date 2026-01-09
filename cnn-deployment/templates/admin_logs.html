@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-6"><i class="fas fa-clipboard-list text-primary me-2"></i>{{ t.system_logs }}</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-danger" id="deleteAllLogs">
+                        <i class="fas fa-trash-alt me-2"></i>{{ 'Delete All Logs' if lang == 'en' else 'ټول یادښتونه ړنګ کړئ' }}
+                    </button>
+                    <button class="btn btn-outline-success" id="exportLogs">
+                        <i class="fas fa-download me-2"></i>{{ 'Export Logs' if lang == 'en' else 'یادښتونه صادرول' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ logs|length }}</h4>
+                    <p class="card-text">{{ 'Total Logs' if lang == 'en' else 'ټول یادښتونه' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            {% set today = namespace(count=0) %}
+            {% for log in logs %}
+                {% if log.created_at.date() == now().date() %}
+                    {% set today.count = today.count + 1 %}
+                {% endif %}
+            {% endfor %}
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ today.count }}</h4>
+                    <p class="card-text">{{ "Today's Logs" if lang == 'en' else 'ننني یادښتونه' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            {% set user_logs = logs|selectattr('user_id')|list|length %}
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ user_logs }}</h4>
+                    <p class="card-text">{{ 'User Actions' if lang == 'en' else 'د کارونکي کړنې' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            {% set system_logs = logs|rejectattr('user_id')|list|length %}
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ system_logs }}</h4>
+                    <p class="card-text">{{ 'System Actions' if lang == 'en' else 'د سیستم کړنې' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="fas fa-filter me-2"></i>{{ 'Filter Logs' if lang == 'en' else 'یادښتونه فلټر کړئ' }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">{{ 'Date From' if lang == 'en' else 'له نیټې' }}</label>
+                            <input type="date" class="form-control" id="dateFrom">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ 'Date To' if lang == 'en' else 'تر نیټې' }}</label>
+                            <input type="date" class="form-control" id="dateTo">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ 'Action Type' if lang == 'en' else 'د کړنې ډول' }}</label>
+                            <select class="form-select" id="actionType">
+                                <option value="">{{ 'All Actions' if lang == 'en' else 'ټولې کړنې' }}</option>
+                                <option value="login">{{ 'Login' if lang == 'en' else 'ننوتل' }}</option>
+                                <option value="logout">{{ 'Logout' if lang == 'en' else 'وتل' }}</option>
+                                <option value="prediction">{{ 'Prediction' if lang == 'en' else 'پیشبینی' }}</option>
+                                <option value="message">{{ 'Message' if lang == 'en' else 'پیغام' }}</option>
+                                <option value="delete">{{ 'Delete' if lang == 'en' else 'ړنګول' }}</option>
+                                <option value="update">{{ 'Update' if lang == 'en' else 'تازه کول' }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ 'User ID' if lang == 'en' else 'د کارونکي ID' }}</label>
+                            <input type="number" class="form-control" id="userId" placeholder="{{ 'User ID' if lang == 'en' else 'د کارونکي ID' }}">
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary" id="applyFilter">
+                                    <i class="fas fa-check me-2"></i>{{ 'Apply Filter' if lang == 'en' else 'فلټر تطبیق کړئ' }}
+                                </button>
+                                <button class="btn btn-outline-secondary" id="resetFilter">
+                                    <i class="fas fa-redo me-2"></i>{{ 'Reset' if lang == 'en' else 'بیا تنظیم' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>{{ 'System Activity Logs' if lang == 'en' else 'د سیستم د فعالیت یادښتونه' }}</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchLogs"
+                                       placeholder="{{ 'Search logs...' if lang == 'en' else 'یادښتونه لټون کړئ...' }}">
+                                <button class="btn btn-outline-light" type="button" id="clearLogSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="logsTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>{{ t.date }} & {{ t.time }}</th>
+                                    <th>{{ 'Action' if lang == 'en' else 'کړنه' }}</th>
+                                    <th>{{ 'User' if lang == 'en' else 'کارونکی' }}</th>
+                                    <th>{{ 'Details' if lang == 'en' else 'تفصیلات' }}</th>
+                                    <th>{{ 'IP Address' if lang == 'en' else 'IP پته' }}</th>
+                                    <th width="100">{{ t.actions }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr data-id="{{ log.id }}"
+                                    data-date="{{ log.created_at.strftime('%Y-%m-%d') }}"
+                                    data-action="{{ log.action.lower() }}"
+                                    data-user="{{ log.user_id if log.user_id else '' }}">
+                                    <td>{{ log.id }}</td>
+                                    <td>
+                                        <span title="{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}">
+                                            {{ log.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if 'login' in log.action.lower() %}
+                                            <span class="badge bg-success">{{ log.action }}</span>
+                                        {% elif 'logout' in log.action.lower() %}
+                                            <span class="badge bg-warning">{{ log.action }}</span>
+                                        {% elif 'delete' in log.action.lower() %}
+                                            <span class="badge bg-danger">{{ log.action }}</span>
+                                        {% elif 'update' in log.action.lower() or 'edit' in log.action.lower() %}
+                                            <span class="badge bg-info">{{ log.action }}</span>
+                                        {% elif 'prediction' in log.action.lower() %}
+                                            <span class="badge bg-primary">{{ log.action }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ log.action }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.user_id %}
+                                            <span class="badge bg-primary">User {{ log.user_id }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">System</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="log-details" title="{{ log.details if log.details else '' }}">
+                                            {{ log.details|truncate(50) if log.details else 'No details' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <code>{{ log.ip_address|truncate(15) if log.ip_address else 'N/A' }}</code>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info view-log"
+                                                data-id="{{ log.id }}"
+                                                title="{{ 'View Details' if lang == 'en' else 'تفصیلات وګورئ' }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger delete-log"
+                                                data-id="{{ log.id }}"
+                                                title="{{ t.delete }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                        <h4>{{ 'No logs found' if lang == 'en' else 'هیڅ یادښت ونه موندل شو' }}</h4>
+                        <p class="text-muted">{{ 'System logs will appear here' if lang == 'en' else 'د سیستم یادښتونه دلته به ښکاره شي' }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if logs %}
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">
+                                {{ 'Showing' if lang == 'en' else 'ښکاره کیږي' }} {{ logs|length }} {{ 'log entries' if lang == 'en' else 'یادښتونه' }}
+                            </span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="loadMoreLogs(-1)" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" disabled>1</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="loadMoreLogs(1)" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Details Modal -->
+<div class="modal fade" id="logModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ 'Log Details' if lang == 'en' else 'د یادښت تفصیلات' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="logContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ t.cancel }}
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printLog()">
+                    <i class="fas fa-print me-2"></i>{{ 'Print' if lang == 'en' else 'چاپول' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .log-details {
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .log-details:hover {
+        color: #3498db;
+    }
+
+    .log-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .log-info .row {
+        margin-bottom: 10px;
+    }
+
+    .log-info dt {
+        font-weight: 600;
+        color: #495057;
+        width: 150px;
+    }
+
+    .log-info dd {
+        margin-left: 170px;
+        margin-bottom: 10px;
+        word-break: break-word;
+    }
+
+    .log-full-details {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Search logs
+        $('#searchLogs').on('keyup', function() {
+            const searchText = $(this).val().toLowerCase();
+            $('#logsTable tbody tr').each(function() {
+                const rowText = $(this).text().toLowerCase();
+                if (rowText.indexOf(searchText) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Clear search
+        $('#clearLogSearch').click(function() {
+            $('#searchLogs').val('');
+            $('#logsTable tbody tr').show();
+        });
+
+        // Apply filters
+        $('#applyFilter').click(function() {
+            const dateFrom = $('#dateFrom').val();
+            const dateTo = $('#dateTo').val();
+            const actionType = $('#actionType').val().toLowerCase();
+            const userId = $('#userId').val();
+
+            $('#logsTable tbody tr').each(function() {
+                const rowDate = $(this).data('date');
+                const rowAction = $(this).data('action');
+                const rowUser = $(this).data('user').toString();
+
+                let show = true;
+
+                // Date filter
+                if (dateFrom && rowDate < dateFrom) {
+                    show = false;
+                }
+                if (dateTo && rowDate > dateTo) {
+                    show = false;
+                }
+
+                // Action type filter
+                if (actionType && !rowAction.includes(actionType)) {
+                    show = false;
+                }
+
+                // User ID filter
+                if (userId && rowUser !== userId) {
+                    show = false;
+                }
+
+                if (show) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            showToast('{{ "Filter applied" if lang == "en" else "فلټر تطبیق شو" }}', 'success');
+        });
+
+        // Reset filters
+        $('#resetFilter').click(function() {
+            $('#dateFrom').val('');
+            $('#dateTo').val('');
+            $('#actionType').val('');
+            $('#userId').val('');
+            $('#logsTable tbody tr').show();
+            showToast('{{ "Filters reset" if lang == "en" else "فلټرونه بیا تنظیم شول" }}', 'info');
+        });
+
+        // Delete all logs
+        $('#deleteAllLogs').click(function() {
+            if (confirm('{{ "Delete ALL system logs? This cannot be undone!" if lang == "en" else "ټول د سیستم یادښتونه ړنګ کړئ؟ دا عمل بیرته راوستل نشي!" }}')) {
+                $.ajax({
+                    url: '{{ url_for("delete_all_logs") }}',
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            alert('{{ "Deleted" if lang == "en" else "ړنګ شول" }} ' + response.deleted_count + ' {{ "logs" if lang == "en" else "یادښتونه" }}');
+                            location.reload();
+                        } else {
+                            alert('{{ "Error:" if lang == "en" else "ستونزه:" }} ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('{{ "Request failed" if lang == "en" else "غوښتنه ناکامه شوه" }}');
+                    }
+                });
+            }
+        });
+
+        // Export logs
+        $('#exportLogs').click(function() {
+            // In real app, this would download CSV
+            const date = new Date().toISOString().split('T')[0];
+            alert('{{ "Logs would be exported as CSV file: system_logs_" if lang == "en" else "یادښتونه به د CSV فایل په توګه صادر شي: system_logs_" }}' + date + '.csv');
+        });
+
+        // View log details
+        $('.view-log').click(function() {
+            const logId = $(this).data('id');
+            const row = $(this).closest('tr');
+
+            const id = row.find('td:nth-child(1)').text();
+            const date = row.find('td:nth-child(2) span').attr('title');
+            const action = row.find('td:nth-child(3) .badge').text();
+            const user = row.find('td:nth-child(4) .badge').text();
+            const details = row.find('td:nth-child(5) .log-details').attr('title');
+            const ip = row.find('td:nth-child(6) code').text();
+
+            $('#logContent').html(`
+                <div class="log-info">
+                    <dl class="row">
+                        <dt class="col-sm-3">{{ "Log ID" if lang == "en" else "د یادښت ID" }}:</dt>
+                        <dd class="col-sm-9"><code>${id}</code></dd>
+
+                        <dt class="col-sm-3">{{ t.date }}:</dt>
+                        <dd class="col-sm-9">${date}</dd>
+
+                        <dt class="col-sm-3">{{ "Action" if lang == "en" else "کړنه" }}:</dt>
+                        <dd class="col-sm-9"><span class="badge bg-success">${action}</span></dd>
+
+                        <dt class="col-sm-3">{{ "User" if lang == "en" else "کارونکی" }}:</dt>
+                        <dd class="col-sm-9"><span class="badge bg-primary">${user}</span></dd>
+
+                        <dt class="col-sm-3">{{ "IP Address" if lang == "en" else "IP پته" }}:</dt>
+                        <dd class="col-sm-9"><code>${ip}</code></dd>
+                    </dl>
+                </div>
+
+                <div class="log-full-details">
+                    <h6>{{ "Full Details" if lang == "en" else "بشپړ تفصیلات" }}:</h6>
+                    <pre class="mt-3">${details || '{{ "No additional details available" if lang == "en" else "هیڅ اضافي تفصیلات شتون نلري" }}'}</pre>
+                </div>
+            `);
+
+            $('#logModal').modal('show');
+        });
+
+        // Delete single log
+        $('.delete-log').click(function() {
+            const logId = $(this).data('id');
+            const button = $(this);
+
+            if (confirm('{{ "Delete this log entry?" if lang == "en" else "دا یادښت ړنګ کړئ؟" }}')) {
+                // In real app, send DELETE request to API
+                button.closest('tr').fadeOut(300, function() {
+                    $(this).remove();
+                    showToast('{{ "Log entry deleted" if lang == "en" else "یادښت ړنګ شو" }}', 'success');
+                });
+            }
+        });
+
+        // Print log
+        window.printLog = function() {
+            const printContent = document.getElementById('logContent').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = `
+                <div class="container mt-4">
+                    <h3>{{ "System Log Details" if lang == "en" else "د سیستم د یادښت تفصیلات" }}</h3>
+                    <hr>
+                    ${printContent}
+                    <hr>
+                    <p class="text-muted">{{ "Printed on" if lang == "en" else "چاپ شوی په" }}: ${new Date().toLocaleString()}</p>
+                </div>
+            `;
+
+            window.print();
+            document.body.innerHTML = originalContent;
+            location.reload();
+        };
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toastId = 'toast-' + Date.now();
+            const direction = $('html').attr('dir') || 'ltr';
+            const position = direction === 'rtl' ? 'left' : 'right';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0"
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     style="position: fixed; top: 20px; ${position}: 20px; z-index: 9999;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            $('body').append(toastHtml);
+
+            const toastElement = new bootstrap.Toast(document.getElementById(toastId));
+            toastElement.show();
+
+            $(`#${toastId}`).on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

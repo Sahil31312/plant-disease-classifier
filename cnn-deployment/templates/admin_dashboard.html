@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6"><i class="fas fa-tachometer-alt text-primary me-2"></i>{{ t.admin_dashboard }}</h1>
+            <p class="lead">{{ 'Welcome back, Admin!' if lang == 'en' else 'بېرته ښه راغلاست، ادمینه!' }}</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.total_users }}</h4>
+                            <p class="card-text">{{ 'Total Users' if lang == 'en' else 'ټول کارونکي' }}</p>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.total_predictions }}</h4>
+                            <p class="card-text">{{ t.total_predictions }}</p>
+                        </div>
+                        <i class="fas fa-brain fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.unread_messages }}</h4>
+                            <p class="card-text">{{ t.unread_messages }}</p>
+                        </div>
+                        <i class="fas fa-envelope fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.today_predictions }}</h4>
+                            <p class="card-text">{{ "Today's Predictions" if lang == 'en' else 'ننني پیشبینۍ' }}</p>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.active_users }}</h4>
+                            <p class="card-text">{{ 'Active Users' if lang == 'en' else 'فعال کارونکي' }}</p>
+                        </div>
+                        <i class="fas fa-user-check fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card bg-secondary text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.total_messages }}</h4>
+                            <p class="card-text">{{ t.total_messages }}</p>
+                        </div>
+                        <i class="fas fa-comments fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>{{ 'Quick Actions' if lang == 'en' else 'ګړني اقدامات' }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-2 col-md-3 col-4 mb-3">
+                            <a href="{{ url_for('view_messages') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-inbox me-2"></i>{{ t.view_messages }}
+                            </a>
+                        </div>
+                        <div class="col-xl-2 col-md-3 col-4 mb-3">
+                            <a href="{{ url_for('manage_users') }}" class="btn btn-success w-100">
+                                <i class="fas fa-users me-2"></i>{{ t.all_users }}
+                            </a>
+                        </div>
+                        <div class="col-xl-2 col-md-3 col-4 mb-3">
+                            <a href="{{ url_for('view_logs') }}" class="btn btn-warning w-100">
+                                <i class="fas fa-clipboard-list me-2"></i>{{ t.system_logs }}
+                            </a>
+                        </div>
+                        <div class="col-xl-2 col-md-3 col-4 mb-3">
+                            <a href="{{ url_for('manage_diseases') }}" class="btn btn-info w-100">
+                                <i class="fas fa-leaf me-2"></i>{{ t.manage_diseases }}
+                            </a>
+                        </div>
+                        <div class="col-xl-2 col-md-3 col-4 mb-3">
+                            <button class="btn btn-outline-danger w-100" id="deleteOldLogs">
+                                <i class="fas fa-trash me-2"></i>{{ t.auto_delete_logs }}
+                            </button>
+                        </div>
+                        <div class="col-xl-2 col-md-3 col-4 mb-3">
+                            <a href="{{ url_for('analysis') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-chart-bar me-2"></i>{{ t.analysis }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <!-- Recent Predictions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>{{ 'Recent Predictions' if lang == 'en' else 'وروستي پیشبینۍ' }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_predictions %}
+                    <div class="list-group list-group-flush">
+                        {% for pred in recent_predictions %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ pred.predicted_class }}</h6>
+                                <small>{{ pred.created_at.strftime('%H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">
+                                <span class="badge bg-{{ 'success' if pred.is_healthy else 'danger' }}">
+                                    {{ "%.1f"|format(pred.confidence * 100) }}%
+                                </span>
+                                {% if pred.user_id %}
+                                <span class="badge bg-info ms-1">User {{ pred.user_id }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary ms-1">Anonymous</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">{{ pred.filename }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-brain fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">{{ 'No recent predictions' if lang == 'en' else 'هیڅ وروستي پیشبیني نشته' }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('analysis') }}" class="btn btn-sm btn-outline-primary">
+                        {{ 'View All' if lang == 'en' else 'ټول وګورئ' }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Messages -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>{{ 'Recent Messages' if lang == 'en' else 'وروستي پیغامونه' }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_messages %}
+                    <div class="list-group list-group-flush">
+                        {% for msg in recent_messages %}
+                        <div class="list-group-item {{ 'list-group-item-warning' if msg.status == 'unread' }}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <strong class="mb-1">{{ msg.name }}</strong>
+                                <small>{{ msg.created_at.strftime('%H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">{{ msg.subject|default('No subject' if lang == 'en' else 'هیڅ موضوع') }}</p>
+                            <small class="text-muted">{{ msg.email|truncate(30) }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">{{ 'No recent messages' if lang == 'en' else 'هیڅ وروستی پیغام نشته' }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('view_messages') }}" class="btn btn-sm btn-outline-success">
+                        {{ 'View All' if lang == 'en' else 'ټول وګورئ' }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>{{ 'System Logs' if lang == 'en' else 'د سیستم یادښتونه' }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_logs %}
+                    <div class="list-group list-group-flush">
+                        {% for log in recent_logs %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <strong class="mb-1">{{ log.action|truncate(30) }}</strong>
+                                <small>{{ log.created_at.strftime('%H:%M') }}</small>
+                            </div>
+                            <p class="mb-1 small">{{ log.details|truncate(40) if log.details else '' }}</p>
+                            <small class="text-muted">IP: {{ log.ip_address|truncate(15) }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">{{ 'No recent logs' if lang == 'en' else 'هیڅ وروستی یادښت نشته' }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('view_logs') }}" class="btn btn-sm btn-outline-warning">
+                        {{ 'View All' if lang == 'en' else 'ټول وګورئ' }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>{{ 'System Health' if lang == 'en' else 'د سیستم روغتیا' }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-database fa-2x {{ 'text-success' if model else 'text-danger' }}"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ 'Model Status' if lang == 'en' else 'د مادل حالت' }}</h6>
+                                    <span class="badge bg-{{ 'success' if model else 'danger' }}">
+                                        {{ 'Loaded' if model else 'Not Loaded' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-server fa-2x text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ 'Database' if lang == 'en' else 'ډیټابیس' }}</h6>
+                                    <span class="badge bg-success">Connected</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-hdd fa-2x text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ 'Storage' if lang == 'en' else 'ذخیره' }}</h6>
+                                    <span class="badge bg-warning">Normal</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-shield-alt fa-2x text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ 'Security' if lang == 'en' else 'امنیت' }}</h6>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Delete old logs
+        $('#deleteOldLogs').click(function() {
+            if (confirm('{{ "Delete logs older than 30 days?" if lang == "en" else "د ۳۰ ورځو څخه زوړ یادښتونه ړنګ کړئ؟" }}')) {
+                $.ajax({
+                    url: '{{ url_for("delete_old_logs") }}',
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            alert('{{ "Deleted" if lang == "en" else "ړنګ شول" }} ' + response.deleted_count + ' {{ "old logs" if lang == "en" else "زوړ یادښتونه" }}');
+                            location.reload();
+                        } else {
+                            alert('{{ "Error:" if lang == "en" else "ستونزه:" }} ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('{{ "Request failed" if lang == "en" else "غوښتنه ناکامه شوه" }}');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

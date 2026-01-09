@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow text-center mt-5">
+                <div class="card-body py-5">
+                    <div class="display-1 text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h1 class="display-4 text-danger">{{ error_code }}</h1>
+                    <h3 class="mb-4">{{ error_message }}</h3>
+                    <p class="lead text-muted mb-4">
+                        {% if lang == 'en' %}
+                        Oops! Something went wrong. The page you're looking for might have been removed or is temporarily unavailable.
+                        {% else %}
+                        اوه! یوه ستونزه رامنځ ته شوه. هغه پاڼه چې تاسو یې لټوئ ممکن لیرې شوې یا د لنډ وخت لپاره نشته.
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>{{ t.home }}
+                        </a>
+                        <a href="{{ url_for('prediction') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-upload me-2"></i>{{ t.prediction }}
+                        </a>
+                        <button onclick="history.back()" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>{{ t.go_back }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

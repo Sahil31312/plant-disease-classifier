@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-6"><i class="fas fa-users text-primary me-2"></i>{{ t.all_users }}</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-success" id="exportUsers">
+                        <i class="fas fa-download me-2"></i>{{ 'Export' if lang == 'en' else 'صادرول' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ users|length }}</h4>
+                    <p class="card-text">{{ 'Total Users' if lang == 'en' else 'ټول کارونکي' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            {% set active_users = users|selectattr('is_active')|list|length %}
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ active_users }}</h4>
+                    <p class="card-text">{{ 'Active Users' if lang == 'en' else 'فعال کارونکي' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            {% set inactive_users = users|rejectattr('is_active')|list|length %}
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ inactive_users }}</h4>
+                    <p class="card-text">{{ 'Inactive Users' if lang == 'en' else 'غیرفعال کارونکي' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            {% set admin_users = users|selectattr('role', 'equalto', 'admin')|list|length %}
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ admin_users }}</h4>
+                    <p class="card-text">{{ 'Admin Users' if lang == 'en' else 'ادمین کارونکي' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0"><i class="fas fa-user-friends me-2"></i>{{ 'User Management' if lang == 'en' else 'د کارونکي مدیریت' }}</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchUsers"
+                                       placeholder="{{ 'Search users...' if lang == 'en' else 'کارونکي لټون کړئ...' }}">
+                                <button class="btn btn-outline-light" type="button" id="clearUserSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>{{ t.username }}</th>
+                                    <th>{{ t.email }}</th>
+                                    <th>{{ 'Role' if lang == 'en' else 'رول' }}</th>
+                                    <th>{{ 'Registered' if lang == 'en' else 'ثبت شوی' }}</th>
+                                    <th>{{ 'Last Login' if lang == 'en' else 'وروستی ننوتل' }}</th>
+                                    <th>{{ t.status }}</th>
+                                    <th width="200">{{ t.actions }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr data-id="{{ user.id }}">
+                                    <td>{{ user.id }}</td>
+                                    <td>
+                                        <strong>{{ user.username }}</strong>
+                                        {% if user.id == current_user.id %}
+                                        <span class="badge bg-primary ms-1">{{ 'You' if lang == 'en' else 'تاسو' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if user.role == 'admin' else 'info' }}">
+                                            {{ user.role|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if user.last_login %}
+                                            {{ user.last_login.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                            <span class="text-muted">{{ 'Never' if lang == 'en' else 'هیڅکله' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                            {{ 'Active' if user.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            {% if user.id != current_user.id %}
+                                            <button class="btn btn-{{ 'danger' if user.is_active else 'success' }} toggle-active"
+                                                    data-id="{{ user.id }}"
+                                                    data-active="{{ user.is_active|lower }}"
+                                                    title="{{ 'Deactivate' if user.is_active else 'Activate' }}">
+                                                <i class="fas fa-{{ 'user-times' if user.is_active else 'user-check' }}"></i>
+                                            </button>
+                                            {% endif %}
+
+                                            {% if user.role != 'admin' %}
+                                            <button class="btn btn-warning make-admin"
+                                                    data-id="{{ user.id }}"
+                                                    title="{{ 'Make Admin' if lang == 'en' else 'ادمین کړئ' }}">
+                                                <i class="fas fa-user-shield"></i>
+                                            </button>
+                                            {% endif %}
+
+                                            <button class="btn btn-info view-user"
+                                                    data-id="{{ user.id }}"
+                                                    title="{{ 'View Details' if lang == 'en' else 'تفصیلات وګورئ' }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+
+                                            {% if user.id != current_user.id and user.role != 'admin' %}
+                                            <button class="btn btn-danger delete-user"
+                                                    data-id="{{ user.id }}"
+                                                    title="{{ t.delete }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users-slash fa-4x text-muted mb-3"></i>
+                        <h4>{{ 'No users found' if lang == 'en' else 'هیڅ کارونکی ونه موندل شو' }}</h4>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if users %}
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">
+                                {{ 'Showing' if lang == 'en' else 'ښکاره کیږي' }} {{ users|length }} {{ 'users' if lang == 'en' else 'کارونکي' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ 'User Details' if lang == 'en' else 'د کارونکي تفصیلات' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ t.cancel }}
+                </button>
+                <button type="button" class="btn btn-primary" id="editUser">
+                    <i class="fas fa-edit me-2"></i>{{ 'Edit' if lang == 'en' else 'سمون' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .user-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-box {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        border-left: 4px solid #3498db;
+    }
+
+    .stat-box h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-weight: bold;
+    }
+
+    .stat-box p {
+        margin: 5px 0 0;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        let currentUserId = null;
+
+        // Search users
+        $('#searchUsers').on('keyup', function() {
+            const searchText = $(this).val().toLowerCase();
+            $('#usersTable tbody tr').each(function() {
+                const rowText = $(this).text().toLowerCase();
+                if (rowText.indexOf(searchText) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Clear search
+        $('#clearUserSearch').click(function() {
+            $('#searchUsers').val('');
+            $('#usersTable tbody tr').show();
+        });
+
+        // Export users
+        $('#exportUsers').click(function() {
+            // In real app, this would download CSV
+            alert('{{ "Export feature would download user data as CSV" if lang == "en" else "د صادرولو ځانګړتیا به د کارونکي ډېټا د CSV په توګه ډاونلوډ کړي" }}');
+        });
+
+        // Toggle user active status
+        $('.toggle-active').click(function() {
+            const userId = $(this).data('id');
+            const isActive = $(this).data('active') === 'true';
+            const button = $(this);
+            const row = button.closest('tr');
+
+            const action = isActive ? 'deactivate' : 'activate';
+            const confirmMsg = isActive ?
+                '{{ "Deactivate this user?" if lang == "en" else "دا کارونکی غیرفعال کړئ؟" }}' :
+                '{{ "Activate this user?" if lang == "en" else "دا کارونکی فعال کړئ؟" }}';
+
+            if (confirm(confirmMsg)) {
+                $.ajax({
+                    url: `/api/user/${userId}/toggle_active`,
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            // Update button
+                            const newActive = response.is_active;
+                            button.data('active', newActive.toString());
+                            button.removeClass(newActive ? 'btn-danger' : 'btn-success')
+                                 .addClass(newActive ? 'btn-success' : 'btn-danger');
+                            button.html(`<i class="fas fa-${newActive ? 'user-times' : 'user-check'}"></i>`);
+
+                            // Update status badge
+                            const statusBadge = row.find('td:nth-child(7) .badge');
+                            statusBadge.removeClass(newActive ? 'bg-danger' : 'bg-success')
+                                      .addClass(newActive ? 'bg-success' : 'bg-danger')
+                                      .text(newActive ? 'Active' : 'Inactive');
+
+                            showToast(response.message, 'success');
+                        }
+                    },
+                    error: function() {
+                        showToast('{{ "Failed to update user" if lang == "en" else "د کارونکي د تازه کولو ناکامي" }}', 'error');
+                    }
+                });
+            }
+        });
+
+        // Make user admin
+        $('.make-admin').click(function() {
+            const userId = $(this).data('id');
+            const button = $(this);
+
+            if (confirm('{{ "Make this user an admin?" if lang == "en" else "دا کارونکی ادمین کړئ؟" }}')) {
+                // In real app, send API request
+                $.ajax({
+                    url: `/api/user/${userId}/make_admin`,
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            // Update role badge
+                            const row = button.closest('tr');
+                            row.find('td:nth-child(4) .badge')
+                               .removeClass('bg-info')
+                               .addClass('bg-warning')
+                               .text('Admin');
+
+                            // Remove make-admin button
+                            button.remove();
+
+                            showToast('{{ "User promoted to admin" if lang == "en" else "کارونکی ادمین ته لوړ شو" }}', 'success');
+                        }
+                    }
+                });
+            }
+        });
+
+        // View user details
+        $('.view-user').click(function() {
+            const userId = $(this).data('id');
+            currentUserId = userId;
+
+            // Get user data from row
+            const row = $(this).closest('tr');
+            const username = row.find('td:nth-child(2) strong').text();
+            const email = row.find('td:nth-child(3)').text();
+            const role = row.find('td:nth-child(4) .badge').text();
+            const registered = row.find('td:nth-child(5)').text();
+            const lastLogin = row.find('td:nth-child(6)').text();
+            const status = row.find('td:nth-child(7) .badge').text();
+
+            // Get user ID for predictions count
+            // In real app, fetch from API
+            $.ajax({
+                url: `/api/user/${userId}/stats`,
+                method: 'GET',
+                success: function(stats) {
+                    $('#userContent').html(`
+                        <div class="user-info mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">{{ t.username }}:</dt>
+                                        <dd class="col-sm-8"><strong>${username}</strong></dd>
+
+                                        <dt class="col-sm-4">{{ t.email }}:</dt>
+                                        <dd class="col-sm-8">${email}</dd>
+
+                                        <dt class="col-sm-4">{{ "Role" if lang == "en" else "رول" }}:</dt>
+                                        <dd class="col-sm-8"><span class="badge bg-${role === 'Admin' ? 'warning' : 'info'}">${role}</span></dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">{{ "Registered" if lang == "en" else "ثبت شوی" }}:</dt>
+                                        <dd class="col-sm-8">${registered}</dd>
+
+                                        <dt class="col-sm-4">{{ "Last Login" if lang == "en" else "وروستی ننوتل" }}:</dt>
+                                        <dd class="col-sm-8">${lastLogin}</dd>
+
+                                        <dt class="col-sm-4">{{ t.status }}:</dt>
+                                        <dd class="col-sm-8"><span class="badge bg-${status === 'Active' ? 'success' : 'danger'}">${status}</span></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="user-stats">
+                            <div class="stat-box">
+                                <h4>${stats.total_predictions || 0}</h4>
+                                <p>{{ t.total_predictions }}</p>
+                            </div>
+                            <div class="stat-box">
+                                <h4>${stats.healthy_predictions || 0}</h4>
+                                <p>{{ t.healthy }}</p>
+                            </div>
+                            <div class="stat-box">
+                                <h4>${stats.diseased_predictions || 0}</h4>
+                                <p>{{ t.unhealthy }}</p>
+                            </div>
+                            <div class="stat-box">
+                                <h4>${stats.avg_confidence || 0}%</h4>
+                                <p>{{ "Avg Confidence" if lang == "en" else "منځنی باوري" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ "User activity and prediction history would be displayed here" if lang == "en" else "د کارونکي فعالیت او د پیشبیني تاریخچه دلته به ښکاره شي" }}
+                        </div>
+                    `);
+
+                    $('#userModal').modal('show');
+                }
+            });
+        });
+
+        // Delete user
+        $('.delete-user').click(function() {
+            const userId = $(this).data('id');
+            const button = $(this);
+            const username = button.closest('tr').find('strong').text();
+
+            if (confirm('{{ "Delete user" if lang == "en" else "کارونکی ړنګ کړئ" }} "' + username + '"?\n{{ "This action cannot be undone!" if lang == "en" else "دا عمل بیرته راوستل نشي!" }}')) {
+                $.ajax({
+                    url: `/api/user/${userId}/delete`,
+                    method: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            button.closest('tr').fadeOut(300, function() {
+                                $(this).remove();
+                                showToast('{{ "User deleted successfully" if lang == "en" else "کارونکی په بریالیتوب سره ړنګ شو" }}', 'success');
+                            });
+                        }
+                    },
+                    error: function() {
+                        showToast('{{ "Failed to delete user" if lang == "en" else "د کارونکي د ړنګولو ناکامي" }}', 'error');
+                    }
+                });
+            }
+        });
+
+        // Edit user
+        $('#editUser').click(function() {
+            if (currentUserId) {
+                // In real app, redirect to edit page or show edit modal
+                alert('{{ "Edit user feature would open here" if lang == "en" else "د کارونکي د سمون ځانګړتیا دلته به خلاصه شي" }}');
+            }
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toastId = 'toast-' + Date.now();
+            const direction = $('html').attr('dir') || 'ltr';
+            const position = direction === 'rtl' ? 'left' : 'right';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0"
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     style="position: fixed; top: 20px; ${position}: 20px; z-index: 9999;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            $('body').append(toastHtml);
+
+            const toastElement = new bootstrap.Toast(document.getElementById(toastId));
+            toastElement.show();
+
+            $(`#${toastId}`).on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

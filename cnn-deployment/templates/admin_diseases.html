@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-6"><i class="fas fa-leaf text-primary me-2"></i>{{ t.manage_diseases }}</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-success" id="refreshDiseases">
+                        <i class="fas fa-sync-alt me-2"></i>{{ 'Refresh' if lang == 'en' else 'تازه کول' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disease Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="diseaseTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="english-tab" data-bs-toggle="tab"
+                            data-bs-target="#english-diseases" type="button" role="tab">
+                        <i class="fas fa-language me-2"></i>{{ 'English Diseases' if lang == 'en' else 'انګلیسي ناروغۍ' }}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pashto-tab" data-bs-toggle="tab"
+                            data-bs-target="#pashto-diseases" type="button" role="tab">
+                        <i class="fas fa-language me-2"></i>{{ 'Pashto Diseases' if lang == 'en' else 'پښتو ناروغۍ' }}
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="diseaseTabsContent">
+        <!-- English Diseases -->
+        <div class="tab-pane fade show active" id="english-diseases" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-language me-2"></i>{{ 'English Disease Information' if lang == 'en' else 'د انګلیسي ناروغۍ معلومات' }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if diseases_en %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>{{ t.disease_name }}</th>
+                                            <th>{{ t.severity }}</th>
+                                            <th>{{ t.symptoms }}</th>
+                                            <th>{{ t.treatment }}</th>
+                                            <th>{{ t.updated }}</th>
+                                            <th>{{ t.actions }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for disease in diseases_en %}
+                                        <tr>
+                                            <td>{{ disease.disease_id }}</td>
+                                            <td>
+                                                <strong>
+                                                    {% if disease.disease_id < class_names['en']|length %}
+                                                        {{ class_names['en'][disease.disease_id] }}
+                                                    {% else %}
+                                                        Disease {{ disease.disease_id }}
+                                                    {% endif %}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ get_severity_color(disease.severity) }}">
+                                                    {{ disease.severity }}
+                                                </span>
+                                            </td>
+                                            <td>{{ disease.symptoms|truncate(30) }}</td>
+                                            <td>{{ disease.treatment|truncate(30) }}</td>
+                                            <td>
+                                                {% if disease.updated_at %}
+                                                    {{ disease.updated_at.strftime('%Y-%m-%d') }}
+                                                {% else %}
+                                                    <span class="text-muted">Never</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('edit_disease', disease_id=disease.disease_id, language='en') }}"
+                                                       class="btn btn-warning" title="{{ t.edit_disease }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button class="btn btn-info view-disease"
+                                                            data-id="{{ disease.disease_id }}"
+                                                            data-lang="en"
+                                                            title="{{ t.view_details }}">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger delete-disease"
+                                                            data-id="{{ disease.disease_id }}"
+                                                            data-lang="en"
+                                                            title="{{ t.delete_disease }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-leaf fa-4x text-muted mb-3"></i>
+                                <h4>{{ 'No disease information found' if lang == 'en' else 'هیڅ د ناروغۍ معلومات ونه موندل شول' }}</h4>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pashto Diseases -->
+        <div class="tab-pane fade" id="pashto-diseases" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-language me-2"></i>{{ 'Pashto Disease Information' if lang == 'en' else 'د پښتو ناروغۍ معلومات' }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if diseases_ps %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>{{ t.disease_name }}</th>
+                                            <th>{{ t.severity }}</th>
+                                            <th>{{ t.symptoms }}</th>
+                                            <th>{{ t.treatment }}</th>
+                                            <th>{{ t.updated }}</th>
+                                            <th>{{ t.actions }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for disease in diseases_ps %}
+                                        <tr>
+                                            <td>{{ disease.disease_id }}</td>
+                                            <td>
+                                                <strong>
+                                                    {% if disease.disease_id < class_names['ps']|length %}
+                                                        {{ class_names['ps'][disease.disease_id] }}
+                                                    {% else %}
+                                                        ناروغي {{ disease.disease_id }}
+                                                    {% endif %}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ get_severity_color(disease.severity) }}">
+                                                    {{ disease.severity }}
+                                                </span>
+                                            </td>
+                                            <td>{{ disease.symptoms|truncate(30) }}</td>
+                                            <td>{{ disease.treatment|truncate(30) }}</td>
+                                            <td>
+                                                {% if disease.updated_at %}
+                                                    {{ disease.updated_at.strftime('%Y-%m-%d') }}
+                                                {% else %}
+                                                    <span class="text-muted">{{ 'هرڅه' if lang == 'ps' else 'Never' }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('edit_disease', disease_id=disease.disease_id, language='ps') }}"
+                                                       class="btn btn-warning" title="{{ t.edit_disease }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button class="btn btn-info view-disease"
+                                                            data-id="{{ disease.disease_id }}"
+                                                            data-lang="ps"
+                                                            title="{{ t.view_details }}">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger delete-disease"
+                                                            data-id="{{ disease.disease_id }}"
+                                                            data-lang="ps"
+                                                            title="{{ t.delete_disease }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-leaf fa-4x text-muted mb-3"></i>
+                                <h4>{{ 'No disease information found' if lang == 'en' else 'هیڅ د ناروغۍ معلومات ونه موندل شول' }}</h4>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Disease Button -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>{{ 'Add New Disease Information' if lang == 'en' else 'نوي ناروغۍ معلومات اضافه کړئ' }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ 'To add disease information for a new class, please contact the system administrator or modify the database directly.' if lang == 'en' else 'د یوې نوې ټولګي لپاره د ناروغۍ معلومات اضافه کولو لپاره، مهرباني وکړئ د سیستم مدیر سره اړیکه ونیسئ یا ډیټابیس مستقیم بدل کړئ.' }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+<a href="{{ url_for('add_disease') if 'add_disease' in get_view_functions() else '#' }}"                               class="btn btn-success w-100 mb-3">
+                                <i class="fas fa-plus me-2"></i>{{ t.add_disease }}
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary w-100" id="syncDiseases">
+                                <i class="fas fa-sync-alt me-2"></i>{{ 'Sync All Diseases' if lang == 'en' else 'ټولې ناروغۍ همغږي کړئ' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disease Details Modal -->
+<div class="modal fade" id="diseaseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ t.disease_info }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="diseaseContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ t.cancel }}
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printDisease()">
+                    <i class="fas fa-print me-2"></i>{{ 'Print' if lang == 'en' else 'چاپول' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .disease-section {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .disease-section:last-child {
+        border-bottom: none;
+    }
+
+    .disease-section h6 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 10px;
+        padding-left: 10px;
+        border-left: 4px solid #3498db;
+    }
+
+    .disease-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        white-space: pre-wrap;
+        line-height: 1.6;
+    }
+
+    .severity-badge {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Refresh diseases
+        $('#refreshDiseases').click(function() {
+            location.reload();
+        });
+
+        // Sync diseases
+        $('#syncDiseases').click(function() {
+            if (confirm('{{ "Sync disease information for all classes?" if lang == "en" else "د ټولو ټولګیو لپاره د ناروغۍ معلومات همغږي کړئ؟" }}')) {
+                $.ajax({
+                    url: '/api/diseases/sync',
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('{{ "Diseases synced successfully" if lang == "en" else "ناروغۍ په بریالیتوب سره همغږي شوې" }}', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        }
+                    }
+                });
+            }
+        });
+
+        // View disease details
+        $('.view-disease').click(function() {
+            const diseaseId = $(this).data('id');
+            const language = $(this).data('lang');
+
+            $.ajax({
+                url: `/api/disease/${diseaseId}/${language}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const disease = response.disease;
+                        const diseaseName = response.disease_name;
+
+                        $('#diseaseContent').html(`
+                            <div class="disease-header mb-4">
+                                <h4>${diseaseName}</h4>
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="badge ${getSeverityClass(disease.severity)} severity-badge me-3">
+                                        ${disease.severity}
+                                    </span>
+                                    <span class="text-muted">
+                                        <i class="fas fa-language me-1"></i>${language.toUpperCase()}
+                                    </span>
+                                    <span class="text-muted ms-3">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        ${disease.updated_at ? disease.updated_at : '{{ "Not updated" if lang == "en" else "تازه نه شوي" }}'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="disease-section">
+                                <h6><i class="fas fa-exclamation-triangle me-2"></i>{{ t.symptoms }}</h6>
+                                <div class="disease-content">${disease.symptoms || '{{ "Not specified" if lang == "en" else "ځانګړی نه دی" }}'}</div>
+                            </div>
+
+                            <div class="disease-section">
+                                <h6><i class="fas fa-pills me-2"></i>{{ t.treatment }}</h6>
+                                <div class="disease-content">${disease.treatment || '{{ "Not specified" if lang == "en" else "ځانګړی نه دی" }}'}</div>
+                            </div>
+
+                            <div class="disease-section">
+                                <h6><i class="fas fa-shield-alt me-2"></i>{{ t.prevention }}</h6>
+                                <div class="disease-content">${disease.prevention || '{{ "Not specified" if lang == "en" else "ځانګړی نه دی" }}'}</div>
+                            </div>
+
+                            <div class="disease-section">
+                                <h6><i class="fas fa-lightbulb me-2"></i>{{ t.recommendation }}</h6>
+                                <div class="disease-content">${disease.recommendation || '{{ "Not specified" if lang == "en" else "ځانګړی نه دی" }}'}</div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="alert alert-warning">
+                                        <h6><i class="fas fa-exclamation-circle me-2"></i>{{ t.warning }}</h6>
+                                        <p class="mb-0">${disease.warning || '{{ "Use treatments with caution" if lang == "en" else "درملنې په احتیاط سره وکاروئ" }}'}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle me-2"></i>{{ t.disclaimer }}</h6>
+                                        <p class="mb-0">${disease.disclaimer || '{{ "Always consult agricultural experts" if lang == "en" else "تل د کرنیزو متخصصینو سره مشوره وکړئ" }}'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                        $('#diseaseModal').modal('show');
+                    }
+                }
+            });
+        });
+
+        // Delete disease
+        $('.delete-disease').click(function() {
+            const diseaseId = $(this).data('id');
+            const language = $(this).data('lang');
+            const button = $(this);
+
+            const confirmMsg = language === 'en' ?
+                'Delete disease information for class ' + diseaseId + '?' :
+                'د ' + diseaseId + ' ټولګي لپاره د ناروغۍ معلومات ړنګ کړئ؟';
+
+            if (confirm(confirmMsg)) {
+                $.ajax({
+                    url: `/api/disease/${diseaseId}/${language}`,
+                    method: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            button.closest('tr').fadeOut(300, function() {
+                                $(this).remove();
+                                showToast('{{ "Disease information deleted" if lang == "en" else "د ناروغۍ معلومات ړنګ شول" }}', 'success');
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        // Helper function for severity colors
+        function getSeverityClass(severity) {
+            const severityMap = {
+                'None': 'bg-success',
+                'Low': 'bg-info',
+                'Medium': 'bg-warning',
+                'High': 'bg-danger',
+                'Critical': 'bg-dark',
+                'هیڅ': 'bg-success',
+                'کم': 'bg-info',
+                'منځنی': 'bg-warning',
+                'لوړ': 'bg-danger',
+                'حساس': 'bg-dark'
+            };
+            return severityMap[severity] || 'bg-secondary';
+        }
+
+        // Print disease info
+        window.printDisease = function() {
+            const printContent = document.getElementById('diseaseContent').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = `
+                <div class="container mt-4">
+                    <h3>{{ "Disease Information" if lang == "en" else "د ناروغۍ معلومات" }}</h3>
+                    <hr>
+                    ${printContent}
+                    <hr>
+                    <p class="text-muted">{{ "Printed on" if lang == "en" else "چاپ شوی په" }}: ${new Date().toLocaleString()}</p>
+                </div>
+            `;
+
+            window.print();
+            document.body.innerHTML = originalContent;
+            location.reload();
+        };
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toastId = 'toast-' + Date.now();
+            const direction = $('html').attr('dir') || 'ltr';
+            const position = direction === 'rtl' ? 'left' : 'right';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0"
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     style="position: fixed; top: 20px; ${position}: 20px; z-index: 9999;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            $('body').append(toastHtml);
+
+            const toastElement = new bootstrap.Toast(document.getElementById(toastId));
+            toastElement.show();
+
+            $(`#${toastId}`).on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

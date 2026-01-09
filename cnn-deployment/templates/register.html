@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h3><i class="fas fa-user-plus me-2"></i>{{ t.register }}</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('register') }}">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">{{ t.username }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       placeholder="{{ t.username }}" required autofocus>
+                            </div>
+                            <small class="text-muted">
+                                {% if lang == 'en' %}3-20 characters, letters and numbers only{% else %}۳-۲۰ نښې، یوازې توري او شمېرې{% endif %}
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">{{ t.email }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       placeholder="{{ t.email_placeholder }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">{{ t.password }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       placeholder="{{ t.password }}" required>
+                            </div>
+                            <small class="text-muted">
+                                {% if lang == 'en' %}Minimum 6 characters{% else %}لږترلږه ۶ نښې{% endif %}
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">{{ t.confirm_password }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                                       placeholder="{{ t.confirm_password }}" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>{{ t.register }}
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-2">{{ t.have_account }}</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>{{ t.login }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Password confirmation validation
+        $('#confirm_password').on('keyup', function() {
+            const password = $('#password').val();
+            const confirm = $(this).val();
+
+            if (password !== confirm) {
+                $(this).addClass('is-invalid');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+
+        // Form validation
+        $('form').submit(function(e) {
+            const password = $('#password').val();
+            const confirm = $('#confirm_password').val();
+
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('{{ t.password_mismatch }}');
+                return false;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('{% if lang == "en" %}Password must be at least 6 characters{% else %}پاسورډ باید لږترلږه ۶ نښې ولري{% endif %}');
+                return false;
+            }
+
+            return true;
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.view_disease }} - {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ t.disease_info }}: {{ disease_name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">{{ t.basic_info }}</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 30%">{{ t.disease_name }}</th>
+                                    <td>{{ disease_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{{ t.language }}</th>
+                                    <td>
+                                        {% if disease.language == 'en' %}
+                                            <span class="badge bg-info">{{ t.english }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ t.pashto }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>{{ t.severity }}</th>
+                                    <td>
+                                        <span class="badge bg-{{ get_severity_color(disease.severity) }}">
+                                            {{ disease.severity }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">{{ t.disease_details }}</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 30%">{{ t.symptoms }}</th>
+                                    <td>{{ disease.symptoms }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{{ t.treatment }}</th>
+                                    <td>{{ disease.treatment }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">{{ t.prevention }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ disease.prevention }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">{{ t.recommendation }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ disease.recommendation }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning text-white">
+                                    <h5 class="mb-0">{{ t.warning }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ disease.warning }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-dark text-white">
+                                    <h5 class="mb-0">{{ t.disclaimer }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ disease.disclaimer }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('manage_diseases') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    {{ t.back_to_list }}
+                                </a>
+                                <div>
+                                    <a href="{{ url_for('edit_disease', disease_id=disease.disease_id, language=disease.language) }}"
+                                       class="btn btn-warning">
+                                        <i class="fas fa-edit me-2"></i>
+                                        {{ t.edit }}
+                                    </a>
+                                    <button onclick="deleteDisease({{ disease.id }})" class="btn btn-danger">
+                                        <i class="fas fa-trash me-2"></i>
+                                        {{ t.delete }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        {{ t.last_updated }}: {{ disease.updated_at.strftime('%Y-%m-%d %H:%M:%S') if disease.updated_at else t.not_available }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteDisease(id) {
+    if (confirm('Are you sure you want to delete this disease information?')) {
+        fetch('/admin/disease/delete/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = "{{ url_for('manage_diseases') }}";
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the disease.');
+        });
+    }
+}
+</script>
+{% endblock %}

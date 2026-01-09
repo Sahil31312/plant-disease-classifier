@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-edit me-2"></i>{{ t.edit_disease }}</h4>
+                        <span class="badge bg-info">
+                            {{ 'Language' if lang == 'en' else 'ژبه' }}: {{ disease.language|upper }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ 'Editing disease information for:' if lang == 'en' else 'د دې لپاره د ناروغۍ معلومات سمول:' }}
+                        <strong>{{ disease_name }}</strong> (ID: {{ disease.disease_id }})
+                    </div>
+
+                    <form method="POST" action="{{ url_for('edit_disease', disease_id=disease.disease_id, language=disease.language) }}">
+                        <!-- Severity -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="severity" class="form-label">{{ t.severity }}</label>
+                                <select class="form-select" id="severity" name="severity" required>
+                                    {% if disease.language == 'en' %}
+                                        <option value="None" {{ 'selected' if disease.severity == 'None' }}>None</option>
+                                        <option value="Low" {{ 'selected' if disease.severity == 'Low' }}>Low</option>
+                                        <option value="Medium" {{ 'selected' if disease.severity == 'Medium' }}>Medium</option>
+                                        <option value="High" {{ 'selected' if disease.severity == 'High' }}>High</option>
+                                        <option value="Critical" {{ 'selected' if disease.severity == 'Critical' }}>Critical</option>
+                                    {% else %}
+                                        <option value="هیڅ" {{ 'selected' if disease.severity == 'هیڅ' }}>هیڅ</option>
+                                        <option value="کم" {{ 'selected' if disease.severity == 'کم' }}>کم</option>
+                                        <option value="منځنی" {{ 'selected' if disease.severity == 'منځنی' }}>منځنی</option>
+                                        <option value="لوړ" {{ 'selected' if disease.severity == 'لوړ' }}>لوړ</option>
+                                        <option value="حساس" {{ 'selected' if disease.severity == 'حساس' }}>حساس</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="symptoms" class="form-label">{{ t.symptoms }}</label>
+                                <textarea class="form-control" id="symptoms" name="symptoms"
+                                          rows="4" required>{{ disease.symptoms }}</textarea>
+                                <div class="form-text">
+                                    {{ 'Describe the visible symptoms of the disease' if lang == 'en' else 'د ناروغۍ لیدل کیدونکي نښې نښانې تشریح کړئ' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Treatment -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="treatment" class="form-label">{{ t.treatment }}</label>
+                                <textarea class="form-control" id="treatment" name="treatment"
+                                          rows="4" required>{{ disease.treatment }}</textarea>
+                                <div class="form-text">
+                                    {{ 'Recommended treatments and medications' if lang == 'en' else 'وړاندیز شوي درملنې او دوایی' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prevention -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="prevention" class="form-label">{{ t.prevention }}</label>
+                                <textarea class="form-control" id="prevention" name="prevention"
+                                          rows="4" required>{{ disease.prevention }}</textarea>
+                                <div class="form-text">
+                                    {{ 'Prevention methods and best practices' if lang == 'en' else 'د مخنیوي طریقې او غوره عمل' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendation -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="recommendation" class="form-label">{{ t.recommendation }}</label>
+                                <textarea class="form-control" id="recommendation" name="recommendation"
+                                          rows="3" required>{{ disease.recommendation }}</textarea>
+                                <div class="form-text">
+                                    {{ 'Specific recommendations for farmers' if lang == 'en' else 'د کروندګرو لپاره ځانګړي وړاندیزونه' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Warning -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="warning" class="form-label">{{ t.warning }}</label>
+                                <textarea class="form-control" id="warning" name="warning"
+                                          rows="3">{{ disease.warning }}</textarea>
+                                <div class="form-text">
+                                    {{ 'Important warnings and cautions' if lang == 'en' else 'مهمې خبرتیاوې او احتیاطونه' }}
+                                </div>
+                            </div>
+
+                            <!-- Disclaimer -->
+                            <div class="col-md-6">
+                                <label for="disclaimer" class="form-label">{{ t.disclaimer }}</label>
+                                <textarea class="form-control" id="disclaimer" name="disclaimer"
+                                          rows="3">{{ disease.disclaimer }}</textarea>
+                                <div class="form-text">
+                                    {{ 'Legal disclaimer and expert advice notice' if lang == 'en' else 'قانوني ذمه وری او د متخصص مشوره خبرتیا' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('manage_diseases') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>{{ t.cancel }}
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save me-2"></i>{{ t.update }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-history me-1"></i>
+                                {{ 'Last updated:' if lang == 'en' else 'وروستی تازه شوی:' }}
+                                {% if disease.updated_at %}
+                                    {{ disease.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    {{ 'Never' if lang == 'en' else 'هیڅکله' }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                {{ 'Updated by:' if lang == 'en' else 'تازه شوی لخوا:' }}
+                                {% if disease.updated_by %}
+                                    User {{ disease.updated_by }}
+                                {% else %}
+                                    {{ 'System' if lang == 'en' else 'سیستم' }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Character counters for textareas
+        $('textarea').each(function() {
+            const textarea = $(this);
+            const charCount = $(`<div class="char-count text-end text-muted small mt-1">0/${textarea.attr('maxlength') || '∞'}</div>`);
+            textarea.after(charCount);
+
+            textarea.on('input', function() {
+                const length = textarea.val().length;
+                const maxLength = textarea.attr('maxlength');
+                charCount.text(`${length}/${maxLength || '∞'}`);
+
+                if (maxLength && length > maxLength * 0.9) {
+                    charCount.addClass('text-danger');
+                } else {
+                    charCount.removeClass('text-danger');
+                }
+            });
+
+            // Trigger initial count
+            textarea.trigger('input');
+        });
+
+        // Form validation
+        $('form').submit(function(e) {
+            let valid = true;
+            let errorMessage = '';
+
+            // Check required fields
+            $('textarea[required], select[required]').each(function() {
+                if (!$(this).val().trim()) {
+                    valid = false;
+                    const fieldName = $(this).closest('.row').find('.form-label').text();
+                    errorMessage += `${fieldName} {{ "is required" if lang == "en" else "اړین دی" }}\n`;
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            if (!valid) {
+                e.preventDefault();
+alert('{{ "Please fill in all required fields:" if lang == "en" else "مهرباني وکړئ ټول اړین ساحې ډک کړئ:" }}\n' + errorMessage);                return false;
+            }
+
+            // Show loading state
+            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>{{ "Saving..." if lang == "en" else "خوندي کیږي..." }}');
+
+            return true;
+        });
+
+        // Auto-save draft (every 30 seconds)
+        let autoSaveTimer;
+
+        function autoSaveDraft() {
+            const formData = {};
+            $('form input, form select, form textarea').each(function() {
+                formData[$(this).attr('name')] = $(this).val();
+            });
+
+            // Save to localStorage
+            localStorage.setItem('disease_draft_' + {{ disease.disease_id }}, JSON.stringify(formData));
+
+            // Show notification
+            const toast = $(`
+                <div class="toast align-items-center text-bg-info border-0 position-fixed"
+                     style="bottom: 20px; right: 20px; z-index: 9999;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-save me-2"></i>{{ "Draft auto-saved" if lang == "en" else "مسوده اتوماتیک خوندي شوه" }}
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            $('body').append(toast);
+            const bsToast = new bootstrap.Toast(toast[0]);
+            bsToast.show();
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Start auto-save timer
+        $('form input, form select, form textarea').on('input change', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(autoSaveDraft, 30000); // 30 seconds
+        });
+
+        // Load draft from localStorage
+        const draft = localStorage.getItem('disease_draft_' + {{ disease.disease_id }});
+        if (draft) {
+if (confirm('{{ "Load saved draft?" if lang == "en" else "خوندي شوې مسوده پورته کړئ؟" }}')) {                const formData = JSON.parse(draft);
+                Object.keys(formData).forEach(key => {
+                    $(`[name="${key}"]`).val(formData[key]);
+                    $(`[name="${key}"]`).trigger('input');
+                });
+            }
+        }
+
+        // Clear draft on successful submit
+        $('form').on('submit', function() {
+            localStorage.removeItem('disease_draft_' + {{ disease.disease_id }});
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

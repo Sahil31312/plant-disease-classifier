@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">{{ t.home }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('about') }}">{{ t.about }}</a></li>
+                    <li class="breadcrumb-item active">{{ t.disease_info }}</li>
+                </ol>
+            </nav>
+
+            <h1 class="display-6">
+                <i class="fas fa-leaf text-danger me-2"></i>
+                {{ disease_name }}
+            </h1>
+            <span class="badge bg-{{ severity_color }} fs-6 mb-3">
+                {{ t.severity }}: {{ disease_data.severity }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Disease Information -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>{{ t.disease_info }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>{{ t.symptoms }}</h6>
+                            <p class="text-muted">{{ disease_data.symptoms }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-shield-alt text-success me-2"></i>{{ t.prevention }}</h6>
+                            <p class="text-muted">{{ disease_data.prevention }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-pills text-info me-2"></i>{{ t.treatment }}</h6>
+                            <p class="text-muted">{{ disease_data.treatment }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-lightbulb text-warning me-2"></i>{{ t.recommendation }}</h6>
+                            <p class="text-muted">{{ disease_data.recommendation }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prevention Tips -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-tips me-2"></i>{{ t.prevention_tips }}</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {% if lang == 'en' %}Use disease-resistant plant varieties{% else %}د ناروغۍ مقاوم نباتي ډولونه وکاروئ{% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {% if lang == 'en' %}Practice crop rotation{% else %}د فصلونو څرخه تمرین کړئ{% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {% if lang == 'en' %}Maintain proper plant spacing{% else %}د نبات مناسب واټن وساتئ{% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {% if lang == 'en' %}Avoid overhead watering{% else %}د سر له پاسه اوبه ورکولو څخه مخنیوی وکړئ{% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {% if lang == 'en' %}Remove infected plant debris{% else %}ناروغ نباتي پاتې شوني لرې کړئ{% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>{{ t.take_action }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-seedling fa-4x text-success mb-3"></i>
+                        <h5>{{ t.organic_treatment }}</h5>
+                        <p class="text-muted small">
+                            {% if lang == 'en' %}Use neem oil or copper-based organic sprays{% else %}نیم تېل یا د مسو پر بنسټ عضوي سپرې وکاروئ{% endif %}
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <i class="fas fa-flask fa-4x text-danger mb-3"></i>
+                        <h5>{{ t.chemical_treatment }}</h5>
+                        <p class="text-muted small">
+                            {% if lang == 'en' %}Apply recommended fungicides as directed{% else %}څارل شوي فنجیسایډونه د لارښوونو په ډول وکاروئ{% endif %}
+                        </p>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('prediction') }}" class="btn btn-primary">
+                            <i class="fas fa-camera me-2"></i>{{ t.upload_plant_image }}
+                        </a>
+                        <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-question-circle me-2"></i>{{ t.contact_us }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Diseases -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-link me-2"></i>{{ t.related_diseases }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for i in range(class_names[lang]|length) %}
+                            {% if i != disease_id %}
+                            <a href="{{ url_for('disease_info_page', disease_id=i) }}"
+                               class="list-group-item list-group-item-action">
+                                {{ class_names[lang][i] }}
+                                <span class="badge bg-{{ get_severity_color(get_disease_info(i, lang)['severity']) }} float-end">
+                                    {{ get_disease_info(i, lang)['severity'] }}
+                                </span>
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

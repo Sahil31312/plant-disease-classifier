@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6"><i class="fas fa-brain text-primary me-2"></i>{{ t.prediction }}</h1>
+            <p class="lead">{{ t.upload_image }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upload Form -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cloud-upload-alt me-2"></i>{{ t.upload_image }}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" method="POST" action="{{ url_for('prediction') }}" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="fileInput" class="form-label">{{ t.choose_file }}</label>
+                            <input class="form-control" type="file" id="fileInput" name="file" accept="image/*" required>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ t.supported_formats }} | {{ t.max_size }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="predictBtn">
+                            <i class="fas fa-magic me-2"></i>{{ t.predict }}
+                        </button>
+                    </form>
+
+                    <div id="loading" class="text-center mt-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">{{ t.processing }}</span>
+                        </div>
+                        <p class="mt-2">{{ t.processing }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Info -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>{{ t.settings }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>{{ t.language }}:</strong><br>
+                            <span class="badge bg-primary">{{ 'English' if lang == 'en' else 'پښتو' }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>{{ t.rtl_mode if direction == 'rtl' else t.ltr_mode }}:</strong><br>
+                            <span class="badge bg-secondary">{{ direction|upper }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-image me-2"></i>{{ t.preview }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="imagePreview" class="mb-3" style="min-height: 300px; display: flex; align-items: center; justify-content: center; border: 2px dashed #dee2e6; border-radius: 10px;">
+                        <div class="text-muted">
+                            <i class="fas fa-image fa-5x mb-3"></i><br>
+                            {{ t.choose_file }}
+                        </div>
+                    </div>
+                    <img id="previewImage" class="img-fluid rounded" style="max-height: 300px; display: none;">
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>{{ t.instructions }}</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>{{ t.choose_file }}</li>
+                        <li>{{ t.click_predict }}</li>
+                        <li>{{ t.view_results }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Preview image before upload
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').style.display = 'none';
+                const previewImage = document.getElementById('previewImage');
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Show loading when form is submitted
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        document.getElementById('predictBtn').disabled = true;
+        document.getElementById('loading').style.display = 'block';
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

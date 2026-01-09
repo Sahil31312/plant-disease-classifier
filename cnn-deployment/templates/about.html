@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6"><i class="fas fa-info-circle text-primary me-2"></i>{{ t.about }}</h1>
+            <p class="lead">{{ t.about_desc }}</p>
+        </div>
+    </div>
+
+    <!-- Project Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>{{ t.project_overview }}</h5>
+                </div>
+                <div class="card-body">
+                    <h5>{{ t.what_is_cnn }}</h5>
+                    <p>
+                        {% if lang == 'en' %}
+                        Convolutional Neural Networks (CNNs) are a class of deep neural networks, most commonly applied to analyzing visual imagery. They are designed to automatically and adaptively learn spatial hierarchies of features from images.
+                        {% else %}
+                        کانوولیوشنل عصبي شبکې (CNNs) د ژورو عصبي شبکو یوه ټولګه ده، چې په معمول ډول د بصري انځورونو تحلیل لپاره کارول کیږي. دوی د انځورونو څخه د ځانګړتیاوو د ځایي سلسلو په اوتوماتيک او اقتباسي ډول زده کولو لپاره ډیزاین شوي دي.
+                        {% endif %}
+                    </p>
+
+                    <h5 class="mt-4">{{ t.project_goals }}</h5>
+                    <ul>
+                        <li>{% if lang == 'en' %}Develop an accurate plant disease detection system{% else %}د کره نباتي ناروغۍ د تشخیص سیستم پراختیا{% endif %}</li>
+                        <li>{% if lang == 'en' %}Create user-friendly bilingual interface{% else %}د کاروونکي دوستانه دوه ژبی انٹرفیس جوړول{% endif %}</li>
+                        <li>{% if lang == 'en' %}Support multiple plant diseases{% else %}د څو نباتي ناروغیو ملاتړ{% endif %}</li>
+                        <li>{% if lang == 'en' %}Provide real-time predictions and treatment recommendations{% else %}د ریښتیني وخت پیشبینۍ او د درملنې وړاندیزونه چمتو کول{% endif %}</li>
+                    </ul>
+
+                    <h5 class="mt-4">{{ t.technology_stack }}</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">
+                                    <i class="fab fa-python fa-3x text-primary"></i>
+                                </div>
+                                <h6>Python</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">
+                                    <i class="fas fa-brain fa-3x text-success"></i>
+                                </div>
+                                <h6>TensorFlow</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">
+                                    <i class="fab fa-flask fa-3x text-warning"></i>
+                                </div>
+                                <h6>Flask</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">
+                                    <i class="fab fa-html5 fa-3x text-danger"></i>
+                                </div>
+                                <h6>HTML/CSS/JS</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>{{ t.model_specifications }}</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>{{ t.model_type }}:</th>
+                            <td>{{ model_specs.type }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ t.input_size }}:</th>
+                            <td>{{ model_specs.input_size }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ t.classes }}:</th>
+                            <td>{{ model_specs.classes }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ t.accuracy }}:</th>
+                            <td>{{ model_specs.accuracy }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ t.training_time }}:</th>
+                            <td>{{ model_specs.training_time }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ t.dataset_size }}:</th>
+                            <td>{{ model_specs.dataset_size }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>{{ t.development_team }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="team-member mb-3">
+                        <h6>{% if lang == 'en' %}Khairullah Ibrahim Khail{% else %}AI خیرالله ابراهیم خېل{% endif %}</h6>
+                        <p class="text-muted mb-0">{% if lang == 'en' %}Model development & training{% else %}مادل پراختیا او روزنه{% endif %}</p>
+                    </div>
+                    <div class="team-member mb-3">
+                        <h6>{% if lang == 'en' %}Web Developer{% else %}ویب پراختیا{% endif %}</h6>
+                        <p class="text-muted mb-0">{% if lang == 'en' %}Frontend & backend development{% else %}فرنټاینډ او بیکاینډ پراختیا{% endif %}</p>
+                    </div>
+                    <div class="team-member">
+                        <h6>{% if lang == 'en' %}UI/UX Designer{% else %}UI/UX ډیزاینر{% endif %}</h6>
+                        <p class="text-muted mb-0">{% if lang == 'en' %}Interface design & user experience{% else %}انٹرفیس ډیزاین او کاروونکي تجربه{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-6"><i class="fas fa-inbox text-primary me-2"></i>{{ t.view_messages }}</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" id="markAllRead">
+                        <i class="fas fa-check-double me-2"></i>{{ 'Mark All Read' if lang == 'en' else 'ټول لوستل شوي په نښه کړئ' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ stats.total }}</h4>
+                    <p class="card-text">{{ t.total_messages }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ stats.unread }}</h4>
+                    <p class="card-text">{{ t.unread_messages }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ stats.total - stats.unread }}</h4>
+                    <p class="card-text">{{ 'Read Messages' if lang == 'en' else 'لولل شوي پیغامونه' }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ messages|length }}</h4>
+                    <p class="card-text">{{ 'Showing' if lang == 'en' else 'ښکاره کیږي' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>{{ t.all_messages }}</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchMessages"
+                                       placeholder="{{ 'Search messages...' if lang == 'en' else 'پیغامونه لټون کړئ...' }}">
+                                <button class="btn btn-outline-light" type="button" id="clearSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if messages %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="messagesTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>{{ t.name }}</th>
+                                    <th>{{ t.email }}</th>
+                                    <th>{{ t.subject }}</th>
+                                    <th>{{ t.date }}</th>
+                                    <th>{{ t.status }}</th>
+                                    <th width="150">{{ t.actions }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}
+                                <tr class="{{ 'table-warning' if message.status == 'unread' }}"
+                                    data-id="{{ message.id }}">
+                                    <td>{{ message.id }}</td>
+                                    <td><strong>{{ message.name }}</strong></td>
+                                    <td>
+                                        <a href="mailto:{{ message.email }}" class="text-decoration-none">
+                                            {{ message.email }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if message.subject %}
+                                            {{ message.subject|truncate(30) }}
+                                        {% else %}
+                                            <span class="text-muted">{{ 'No subject' if lang == 'en' else 'هیڅ موضوع' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span title="{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}">
+                                            {{ message.created_at.strftime('%Y-%m-%d') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if message.status == 'unread' else 'success' }}">
+                                            {{ message.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info view-message" data-id="{{ message.id }}"
+                                                title="{{ t.view_details }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if message.status == 'unread' %}
+                                        <button class="btn btn-sm btn-success mark-read" data-id="{{ message.id }}"
+                                                title="{{ 'Mark as read' if lang == 'en' else 'لولل شوي په نښه کړئ' }}">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-danger delete-message" data-id="{{ message.id }}"
+                                                title="{{ t.delete }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-envelope-open fa-4x text-muted mb-3"></i>
+                        <h4>{{ 'No messages found' if lang == 'en' else 'هیڅ پیغام ونه موندل شو' }}</h4>
+                        <p class="text-muted">{{ 'All messages will appear here' if lang == 'en' else 'ټول پیغامونه دلته به ښکاره شي' }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if messages %}
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">
+                                {{ 'Showing' if lang == 'en' else 'ښکاره کیږي' }} {{ messages|length }} {{ 'messages' if lang == 'en' else 'پیغامونه' }}
+                            </span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" disabled>1</button>
+                            <button class="btn btn-outline-secondary btn-sm" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ t.message_details }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="messageContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ t.cancel }}
+                </button>
+                <button type="button" class="btn btn-primary" id="replyMessage">
+                    <i class="fas fa-reply me-2"></i>{{ 'Reply' if lang == 'en' else 'ځواب' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-content {
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+
+    .message-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .message-info dt {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .message-info dd {
+        margin-bottom: 10px;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        let currentMessageId = null;
+
+        // Search messages
+        $('#searchMessages').on('keyup', function() {
+            const searchText = $(this).val().toLowerCase();
+            $('#messagesTable tbody tr').each(function() {
+                const rowText = $(this).text().toLowerCase();
+                if (rowText.indexOf(searchText) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Clear search
+        $('#clearSearch').click(function() {
+            $('#searchMessages').val('');
+            $('#messagesTable tbody tr').show();
+        });
+
+        // View message details
+        $('.view-message').click(function() {
+            const messageId = $(this).data('id');
+            currentMessageId = messageId;
+
+            // Get message data from row
+            const row = $(this).closest('tr');
+            const name = row.find('td:nth-child(2)').text();
+            const email = row.find('td:nth-child(3)').text();
+            const subject = row.find('td:nth-child(4)').text();
+            const date = row.find('td:nth-child(5)').attr('title');
+            const status = row.find('.badge').text();
+
+            // In a real app, you would fetch full message via AJAX
+            // For now, show what we have
+            $('#messageContent').html(`
+                <div class="message-info">
+                    <dl class="row">
+                        <dt class="col-sm-3">{{ t.name }}:</dt>
+                        <dd class="col-sm-9">${name}</dd>
+
+                        <dt class="col-sm-3">{{ t.email }}:</dt>
+                        <dd class="col-sm-9"><a href="mailto:${email}">${email}</a></dd>
+
+                        <dt class="col-sm-3">{{ t.subject }}:</dt>
+                        <dd class="col-sm-9">${subject || '{{ "No subject" if lang == "en" else "هیڅ موضوع" }}'}</dd>
+
+                        <dt class="col-sm-3">{{ t.date }}:</dt>
+                        <dd class="col-sm-9">${date}</dd>
+
+                        <dt class="col-sm-3">{{ t.status }}:</dt>
+                        <dd class="col-sm-9"><span class="badge bg-${status === 'unread' ? 'warning' : 'success'}">${status}</span></dd>
+                    </dl>
+                </div>
+
+                <div class="message-content">
+                    <h6>{{ t.message }}:</h6>
+                    <div class="border p-3 rounded bg-light">
+                        <p>{{ "Full message content would appear here. In a real application, you would fetch this from the database via AJAX." if lang == "en" else "د پیغام بشپړ محتوا دلته به ښکاره شي. په ریښتیني اپلیکیشن کې، تاسو به دا د ډیټابیس څخه د AJAX له لارې ترلاسه کړئ." }}</p>
+                        <p class="text-muted">{{ "Sample message text..." if lang == "en" else "د پیغام نمونه متن..." }}</p>
+                    </div>
+                </div>
+            `);
+
+            $('#messageModal').modal('show');
+        });
+
+        // Mark as read
+        $('.mark-read').click(function() {
+            const messageId = $(this).data('id');
+            const button = $(this);
+
+            $.ajax({
+                url: `/api/message/${messageId}/read`,
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        // Update row appearance
+                        const row = button.closest('tr');
+                        row.removeClass('table-warning');
+                        row.find('.badge').removeClass('bg-warning').addClass('bg-success').text('read');
+                        button.remove();
+
+                        // Update unread count
+                        const unreadCount = parseInt($('.card.bg-warning .card-title').text());
+                        $('.card.bg-warning .card-title').text(unreadCount - 1);
+
+                        showToast('{{ "Message marked as read" if lang == "en" else "پیغام لولل شوی په نښه شو" }}', 'success');
+                    }
+                },
+                error: function() {
+                    showToast('{{ "Failed to mark as read" if lang == "en" else "د لولو په نښه کولو کې ناکامي" }}', 'error');
+                }
+            });
+        });
+
+        // Mark all as read
+        $('#markAllRead').click(function() {
+            if (confirm('{{ "Mark all messages as read?" if lang == "en" else "ټول پیغامونه لولل شوي په نښه کړئ؟" }}')) {
+                // Get all unread message IDs
+                const unreadIds = [];
+                $('.mark-read').each(function() {
+                    unreadIds.push($(this).data('id'));
+                });
+
+                // Mark each one as read
+                unreadIds.forEach(function(id) {
+                    $.ajax({
+                        url: `/api/message/${id}/read`,
+                        method: 'POST',
+                        async: false
+                    });
+                });
+
+                // Update UI
+                $('.table-warning').removeClass('table-warning');
+                $('.badge.bg-warning').removeClass('bg-warning').addClass('bg-success').text('read');
+                $('.mark-read').remove();
+                $('.card.bg-warning .card-title').text('0');
+
+                showToast('{{ "All messages marked as read" if lang == "en" else "ټول پیغامونه لولل شوي په نښه شول" }}', 'success');
+            }
+        });
+
+        // Delete message
+        $('.delete-message').click(function() {
+            const messageId = $(this).data('id');
+            const button = $(this);
+
+            if (confirm('{{ "Delete this message?" if lang == "en" else "دا پیغام ړنګ کړئ؟" }}')) {
+                // In a real app, you would send DELETE request to API
+                // For now, just remove from UI
+                button.closest('tr').fadeOut(300, function() {
+                    $(this).remove();
+                    showToast('{{ "Message deleted" if lang == "en" else "پیغام ړنګ شو" }}', 'success');
+                });
+            }
+        });
+
+        // Reply to message
+        $('#replyMessage').click(function() {
+            if (currentMessageId) {
+                window.open(`mailto:?subject=Re: {{ "Plant Disease Inquiry" if lang == "en" else "د نباتاتو ناروغۍ پوښتنه" }}`);
+                $('#messageModal').modal('hide');
+            }
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toastId = 'toast-' + Date.now();
+            const direction = $('html').attr('dir') || 'ltr';
+            const position = direction === 'rtl' ? 'left' : 'right';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0"
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     style="position: fixed; top: 20px; ${position}: 20px; z-index: 9999;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            $('body').append(toastHtml);
+
+            const toastElement = new bootstrap.Toast(document.getElementById(toastId));
+            toastElement.show();
+
+            $(`#${toastId}`).on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
